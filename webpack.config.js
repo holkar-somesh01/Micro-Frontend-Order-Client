@@ -9,6 +9,7 @@ const printCompilationMessage = require('./compilation.config.js');
 
 module.exports = (_, argv) => ({
   output: {
+    // publicPath: "http://localhost:8085/",
     publicPath: "https://micro-frontend-order-client.vercel.app/",
   },
 
@@ -64,7 +65,10 @@ module.exports = (_, argv) => ({
     new ModuleFederationPlugin({
       name: "order",
       filename: "remoteEntry.js",
-      remotes: {},
+      remotes: {
+        // auth: "client@http://localhost:8080/remoteEntry.js"
+        auth: "client@https://micro-frontend-auth-client.vercel.app/remoteEntry.js"
+      },
       exposes: {
         "./App": "./src/App.tsx",
         "./cartApi": "./src/redux/cartApi.ts",

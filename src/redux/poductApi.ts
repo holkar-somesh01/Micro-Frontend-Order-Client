@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { user } from './cartApi';
 export interface ApiResponse<T> {
     success: boolean;
     message: string;
@@ -19,7 +20,21 @@ export interface IProduct {
 
 export const productApi = createApi({
     reducerPath: 'productApi',
-    baseQuery: fetchBaseQuery({ baseUrl: 'https://micro-service-order-server.vercel.app/api/products', credentials: 'include' }),
+    baseQuery: fetchBaseQuery({
+        //baseUrl: "http://localhost:3300/api/products",
+        baseUrl: 'https://micro-service-order-server.vercel.app/api/products',
+        credentials: "include",
+        prepareHeaders: (headers, { getState }) => {
+            const state = getState() as any;
+            const sliceToken = state.auth.user?.token;
+            if (sliceToken) {
+                headers.set("Authorization", sliceToken);
+            } else if (user.token) {
+                headers.set("Authorization", user.token);
+            }
+            return headers;
+        },
+    }),
     tagTypes: ['product'],
     endpoints: (builder) => ({
         getAllProducts: builder.query<IProduct[], void>({

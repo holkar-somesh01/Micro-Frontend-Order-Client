@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react"
+import { user } from "./cartApi";
 
 
 export interface ProductItem {
@@ -64,7 +65,21 @@ export interface Order {
 
 export const orderApi = createApi({
     reducerPath: "orderApi",
-    baseQuery: fetchBaseQuery({ baseUrl: "https://micro-service-order-server.vercel.app/api/order" }),
+    baseQuery: fetchBaseQuery({
+        //baseUrl: "http://localhost:3300/api/order",
+        baseUrl: "https://micro-service-order-server.vercel.app/api/order",
+        credentials: "include",
+        prepareHeaders: (headers, { getState }) => {
+            const state = getState() as any;
+            const sliceToken = state.auth.user?.token;
+            if (sliceToken) {
+                headers.set("Authorization", sliceToken);
+            } else if (user.token) {
+                headers.set("Authorization", user.token);
+            }
+            return headers;
+        },
+    }),
     tagTypes: ["order"],
     endpoints: (builder) => {
         return {

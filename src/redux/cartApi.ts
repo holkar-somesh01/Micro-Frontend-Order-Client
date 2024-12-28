@@ -6,7 +6,6 @@ export interface ProductItem {
     qty: number;
 }
 export interface ProductRequest {
-    // address: string,
     user: string,
     products: ProductItem[]
 
@@ -31,6 +30,10 @@ export interface Product {
 }
 
 
+export interface IUser {
+    token?: string;
+}
+
 export interface Cartinfo {
     _id: string
     isDeleted?: boolean
@@ -39,14 +42,6 @@ export interface Cartinfo {
     userId: string,
     pId: string,
 }
-
-// export interface OrderItem {
-//     image: string,
-//     name: string,
-//     qty: number,
-//     price: number
-
-// }
 
 export interface IProduct {
     _id: string;
@@ -59,13 +54,24 @@ export interface IProduct {
     active: boolean;
     pId: string
 }
-
-
-
-
+export const user: Storage = JSON.parse(localStorage.getItem("user") || "{}")
 export const cartApi = createApi({
     reducerPath: "cartApi",
-    baseQuery: fetchBaseQuery({ baseUrl: "https://micro-service-order-server.vercel.app/api/cart", credentials: "include" }),
+    baseQuery: fetchBaseQuery({
+        // baseUrl: "http://localhost:3300/api/cart",
+        baseUrl: "https://micro-service-order-server.vercel.app/api/cart",
+        credentials: "include",
+        prepareHeaders: (headers, { getState }) => {
+            const state = getState() as any;
+            const sliceToken = state.auth.user?.token;
+            if (sliceToken) {
+                headers.set("Authorization", sliceToken);
+            } else if (user.token) {
+                headers.set("Authorization", user.token);
+            }
+            return headers;
+        },
+    }),
     tagTypes: ["cart"],
     endpoints: (builder) => {
         return {
@@ -110,7 +116,7 @@ export const cartApi = createApi({
                     return {
                         url: "/add-product",
                         method: "POST",
-                        body: productData
+                        body: productData,
                     }
                 },
                 invalidatesTags: ["cart"]
@@ -120,7 +126,6 @@ export const cartApi = createApi({
                     return {
                         url: `/delete-product/${id}`,
                         method: "DELETE",
-
                     }
                 },
                 invalidatesTags: ["cart"]
@@ -151,4 +156,12 @@ export const cartApi = createApi({
     }
 })
 
-export const { useGetcartProductQuery, useAddtoCartMutation, useDeleteItemFromCartMutation, useEmptyCartMutation, usePlaceOrderMutation, useGetallproductsQuery, useGetproductsdetailsQuery } = cartApi
+export const {
+    useGetcartProductQuery,
+    useAddtoCartMutation,
+    useDeleteItemFromCartMutation,
+    useEmptyCartMutation,
+    usePlaceOrderMutation,
+    useGetallproductsQuery,
+    useGetproductsdetailsQuery
+} = cartApi
